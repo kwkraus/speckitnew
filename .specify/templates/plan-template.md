@@ -31,7 +31,14 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- Quality: Implementation approach defines linting, formatting, static analysis, and
+  code review expectations consistent with repository patterns.
+- Testing: Plan identifies story-level independent validation and the required unit,
+  integration, and contract test coverage or an explicit justification for omission.
+- UX Consistency: User-facing work documents the interaction, copy, accessibility, and
+  visual conventions it follows or the reason a new pattern is required.
+- Performance: Plan records measurable budgets or states why no meaningful performance
+  constraint applies, and names the validation method.
 
 ## Project Structure
 

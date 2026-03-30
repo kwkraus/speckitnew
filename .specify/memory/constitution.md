@@ -1,50 +1,103 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: template -> 1.0.0
+- Modified principles:
+	- Template principle 1 -> I. Code Quality Is Enforced
+	- Template principle 2 -> II. Tests Define Completion
+	- Template principle 3 -> III. User Experience Stays Consistent
+	- Template principle 4 -> IV. Performance Is Budgeted
+- Added sections:
+	- Delivery Standards
+	- Development Workflow
+- Removed sections:
+	- Placeholder fifth principle slot from the template
+- Templates requiring updates:
+	- ✅ .specify/templates/plan-template.md
+	- ✅ .specify/templates/spec-template.md
+	- ✅ .specify/templates/tasks-template.md
+	- ✅ .specify/templates/commands/*.md (no files present; no update required)
+- Follow-up TODOs:
+	- TODO(RATIFICATION_DATE): original adoption date is not recoverable from repository context
+-->
+
+# Speckit Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Code Quality Is Enforced
+Every change MUST leave the repository in a clearer and more maintainable state.
+Production code MUST be explicit, minimal in scope, and aligned with existing project
+structure. Linting, formatting, and static analysis requirements MUST be defined in the
+plan before implementation begins. Reviewers MUST reject speculative abstractions,
+unbounded complexity, and undocumented deviations from established project patterns.
+Rationale: Speckit is a workflow system; unclear or brittle implementation guidance
+propagates defects into every downstream artifact.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Tests Define Completion
+Each user story MUST specify how it is validated independently, and implementation is
+not complete until automated tests prove the required behavior. Plans MUST describe the
+test strategy for unit, integration, and contract coverage where applicable. Tasks MUST
+place test creation before implementation work, and any decision to omit a test layer
+MUST be justified explicitly in the plan. Rationale: Speckit depends on reliable,
+repeatable execution steps; unverifiable work is incomplete work.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. User Experience Stays Consistent
+User-facing behavior MUST preserve a coherent experience across flows, copy,
+interaction states, and visual patterns. Specifications for features with a UI or CLI
+surface MUST describe the relevant experience conventions, including empty states,
+errors, and accessibility expectations. Plans and tasks MUST call out any intentional
+new pattern so reviewers can evaluate whether it extends or fragments the product.
+Rationale: inconsistent experiences increase support cost and reduce trust even when
+features are technically correct.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Performance Is Budgeted
+Performance requirements MUST be stated as measurable budgets whenever a feature can
+affect latency, throughput, resource usage, or perceived responsiveness. The plan MUST
+record the expected budget and the validation method, and tasks MUST include any needed
+profiling, benchmarking, or regression checks. A change that meets functional goals but
+violates an agreed budget is incomplete until the variance is resolved or formally
+accepted. Rationale: performance regressions are product regressions and must be managed
+with the same rigor as correctness.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+## Delivery Standards
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+- Plans MUST document quality gates, test strategy, UX consistency expectations, and
+	performance budgets before implementation tasks are generated.
+- Specifications MUST describe independently testable user stories and measurable
+	success criteria.
+- Tasks MUST use exact file paths and sequence validation work ahead of implementation.
+- Documentation that guides operators or contributors MUST be updated when behavior,
+	workflow, or expectations change.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+## Development Workflow
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- `/speckit.specify` outputs MUST capture user stories, independent tests, edge cases,
+	requirements, and measurable success criteria.
+- `/speckit.plan` outputs MUST pass the Constitution Check before implementation starts
+	and MUST restate any justified exceptions in Complexity Tracking.
+- `/speckit.tasks` outputs MUST preserve story independence, include validation work,
+	and surface cross-cutting tasks for quality, UX, and performance when relevant.
+- `/speckit.implement` work MUST follow the ordered tasks unless the governing spec,
+	plan, and tasks artifacts are regenerated.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes conflicting repository guidance for Speckit workflows.
+Amendments MUST be made in this file, MUST include a Sync Impact Report, and MUST update
+affected templates or guidance in the same change.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Versioning policy:
+- MAJOR: remove a principle, redefine a principle in a backward-incompatible way, or
+	materially weaken a compliance requirement.
+- MINOR: add a new principle or materially expand required workflow guidance.
+- PATCH: clarify wording, fix inconsistencies, or make non-semantic edits.
+
+Compliance review expectations:
+- Every plan MUST document how it satisfies the four core principles.
+- Every task list MUST show where testing, UX validation, and performance checks occur
+	when relevant to the feature.
+- Reviewers MUST block approval when required gates, measurements, or justifications are
+	missing.
+
+**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date unknown | **Last Amended**: 2026-03-30

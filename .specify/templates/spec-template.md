@@ -11,6 +11,9 @@
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
   Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
+
+  For any user-facing story, capture the expected experience conventions so the feature
+  can be reviewed for consistency across states, copy, and accessibility behavior.
   
   Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
   Think of each story as a standalone slice of functionality that can be:
@@ -90,6 +93,14 @@
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
 
+### Quality & Experience Requirements
+
+- **QR-001**: Feature MUST define how correctness is validated with automated tests.
+- **QR-002**: User-facing behavior MUST follow existing UX patterns or explicitly
+  describe the intended new pattern.
+- **QR-003**: Feature MUST define measurable performance expectations or explicitly
+  state why no meaningful performance constraint applies.
+
 *Example of marking unclear requirements:*
 
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
@@ -113,6 +124,9 @@
 - **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
 - **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
 - **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+
+Include performance or responsiveness targets here whenever the feature affects latency,
+throughput, render time, or resource usage.
 
 ## Assumptions
 
