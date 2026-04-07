@@ -3,11 +3,20 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
+.Python
 .pytest_cache/
+.hypothesis/
+.tox/
+.nox/
 .mypy_cache/
 .ruff_cache/
 .coverage
+.coverage.*
 htmlcov/
+site/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
 backend/.venv/
 .venv/
 venv/
@@ -15,11 +24,14 @@ venv/
 # Node / frontend
 node_modules/
 frontend/node_modules/
+frontend/.vite/
+.vite/
 frontend/dist/
 dist/
 build/
 coverage/
 *.tsbuildinfo
+*.eslintcache
 
 # Environment / secrets
 .env
