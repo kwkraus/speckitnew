@@ -5,6 +5,16 @@
 **Status**: Draft  
 **Input**: User description: "Multi-agent workflow for processing PDF documents for data extraction, data embedding, azure search vector storage, and a UI for natural language discussion with data"
 
+## Clarifications
+
+### Session 2026-04-07
+
+- Q: Is authentication something this feature must implement/integrate, or an external prerequisite? → A: Auth integration is in scope — the system enforces login via an existing identity provider (e.g., Azure Entra ID); unauthenticated users are redirected to login.
+- Q: Does the system need to support more than one user role? → A: Single role only — all authenticated users have identical capabilities over their own documents.
+- Q: What is the expected availability posture for this system? → A: No formal availability requirement — internal tool, occasional downtime is tolerable, no defined recovery time target.
+- Q: When a duplicate PDF is detected (by content), what should the system do? → A: Warn the user — show a notification that a duplicate was detected and ask whether to skip or replace the existing indexed version.
+- Q: What level of operational visibility is needed beyond the per-document status shown in the UI? → A: Standard logging — errors, warnings, and key pipeline events (extraction started, embedding complete, indexing failed, etc.) written to a central log store for developer debugging.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - PDF Document Ingestion & Processing (Priority: P1)
@@ -77,7 +87,7 @@ A user can upload multiple PDF files in a single operation rather than one at a 
 ### Edge Cases
 
 - What happens when a PDF contains only scanned images with no selectable text? The system should attempt OCR-based extraction and notify the user if content quality may be reduced.
-- What happens when the same PDF is uploaded twice? The system should detect duplicates by content hash and either skip re-indexing or prompt the user.
+- What happens when the same PDF is uploaded twice? The system detects duplicates by content hash, notifies the user that a duplicate was found, and asks whether to skip re-indexing or replace the existing indexed version. The user must explicitly choose before any action is taken.
 - How does the system handle very large PDFs (hundreds of pages)? Processing should be chunked and the user should receive progress feedback.
 - What happens when the vector index is temporarily unavailable? The system should queue ingestion tasks and retry, notifying the user of delays.
 - What happens when a user asks a question while no documents are indexed? The system should inform the user that no documents are available and prompt them to upload one.
@@ -101,12 +111,18 @@ A user can upload multiple PDF files in a single operation rather than one at a 
 - **FR-012**: System MUST handle malformed, encrypted, or unreadable PDFs gracefully and report the failure to the user.
 - **FR-013**: System MUST support ingestion of multiple PDF documents, processing each independently through the agent pipeline.
 - **FR-014**: System MUST orchestrate extraction, embedding, and indexing as a coordinated multi-agent workflow with observable status per stage.
+- **FR-015**: System MUST enforce authentication via an existing identity provider (e.g., Azure Entra ID) before any feature is accessible; unauthenticated users MUST be redirected to the identity provider login page.
+- **FR-016**: System MUST propagate the authenticated user's identity through all operations to enforce per-user data isolation (documents, conversation history, and index entries are scoped to the authenticated user).
+- **FR-017**: All authenticated users MUST have identical capabilities; no administrative or elevated roles exist within the application — access control differentiation is handled exclusively at the identity provider level.
+- **FR-018**: When a duplicate PDF is detected (matched by content hash), the system MUST notify the user and present a choice to either skip re-indexing or replace the existing indexed version; no action is taken without explicit user confirmation.
+- **FR-019**: The system MUST emit structured log entries for errors, warnings, and key pipeline events (e.g., extraction started, embedding complete, indexing failed) to a central log store accessible to developers for debugging.
 
 ### Quality & Experience Requirements
 
 - **QR-001**: Each agent stage (extraction, embedding, indexing) MUST be independently testable with defined inputs and outputs to enable automated correctness validation.
 - **QR-002**: The chat interface MUST provide a clear, familiar conversational UX with visible message history, loading indicators during answer generation, and legible citation formatting.
 - **QR-003**: The system MUST deliver query responses within 10 seconds under normal operating conditions; document processing time for a typical 50-page PDF MUST complete within 3 minutes.
+- **QR-004**: The system MUST emit structured logs for errors, warnings, and key pipeline stage transitions to a central log store; no metrics dashboard or distributed tracing is required.
 
 ### Key Entities
 
@@ -133,10 +149,11 @@ A user can upload multiple PDF files in a single operation rather than one at a 
 
 - Users access the system via a modern web browser; native mobile apps are out of scope for this version.
 - All uploaded PDF documents are in English; multi-language support is out of scope for v1.
-- Users are assumed to be internal knowledge workers or researchers, not anonymous public users; user authentication will be provided by an existing identity provider via standard OAuth2/SSO.
+- Users are assumed to be internal knowledge workers or researchers, not anonymous public users; the system integrates with an existing identity provider (e.g., Azure Entra ID) via OAuth2/SSO to enforce authenticated access — this integration is in scope for this feature.
 - Documents uploaded by a user are accessible only to that user (per-user isolation); shared team libraries are out of scope for v1.
 - The Azure AI Search service and an AI embedding/chat model endpoint will be provisioned and available as dependencies before development begins.
 - PDF files are assumed to be primarily text-based; scanned image-only PDFs may have reduced extraction quality and this limitation will be communicated to users.
 - File size limits will follow platform defaults (assumed up to 50 MB per file); very large files may require extended processing time.
 - The multi-agent workflow orchestration runs as a background pipeline; users do not need to remain on the page while processing occurs.
+- The system has no formal availability or uptime requirement; it is an internal tool where occasional downtime is acceptable. No SLA, recovery time objective (RTO), or recovery point objective (RPO) targets apply. Resilience design (retries, queuing) is for user experience quality, not SLA compliance.
 - Conversation history is maintained for the duration of a browser session; persistent cross-session history is out of scope for v1.
