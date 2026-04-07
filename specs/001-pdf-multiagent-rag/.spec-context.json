@@ -1,0 +1,11 @@
+{
+  "currentStep": "plan",
+  "stepHistory": {
+    "plan": {
+      "startedAt": "2026-04-07T21:11:02.442Z",
+      "completedAt": null
+    }
+  },
+  "status": "completed",
+  "specName": "Pdf Multiagent Rag"
+}
