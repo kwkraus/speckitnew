@@ -40,7 +40,8 @@
 
 - [ ] T007 Implement Pydantic Settings configuration class with all Azure service connection fields (Cosmos endpoint/key/db, Blob connection string/container, AI Search endpoint/key/index, OpenAI endpoint/key/deployments, Doc Intelligence endpoint/key, Entra tenant/client IDs, app settings for max file size, max concurrent jobs, chunk sizes) in backend/app/config.py
 - [ ] T008 Create FastAPI application with CORS middleware (allow frontend origin), lifespan handler for Azure client initialization, and API router registration (/api/v1 prefix) in backend/app/main.py
-- [ ] T009 [P] Implement Azure Entra ID JWT token validation middleware — decode and validate Bearer tokens against tenant/audience, extract user_id (oid claim) and user_name, reject expired/invalid tokens with 401 in backend/app/auth/middleware.py
+- [ ] T069 Ensure Cosmos DB database and containers exist on startup — verify or create database and containers (`documents` with partition key `/user_id`, `conversations` with partition key `/user_id`) during app lifespan initialization in backend/app/main.py (analogous to T015 `ensure_index_exists` for AI Search)
+- [ ] T009 [P] Implement Azure Entra ID JWT token validation middleware— decode and validate Bearer tokens against tenant/audience, extract user_id (oid claim) and user_name, reject expired/invalid tokens with 401 in backend/app/auth/middleware.py
 - [ ] T010 [P] Implement get_current_user FastAPI Depends() function that extracts authenticated user identity from request state (set by auth middleware) and returns a CurrentUser dataclass with user_id and display_name in backend/app/auth/dependencies.py
 - [ ] T011 [P] Create Document Pydantic models (DocumentCreate, DocumentResponse, DocumentStatus with stage progress dict, DocumentListResponse with pagination) matching data-model.md schema and documents-api.md contract shapes in backend/app/models/document.py
 - [ ] T012 [P] Create ContentChunk Pydantic model (id, document_id, user_id, chunk_index, content, section_title, page_number, embedding as list[float], token_count) matching data-model.md and AI Search index schema in backend/app/models/chunk.py
@@ -76,6 +77,7 @@
 - [ ] T027 [P] [US1] Write unit tests for embedding agent — given list of text chunks, returns list of 1536-dim float vectors; test batching for large document; test error handling on OpenAI failure in backend/tests/unit/test_embedding_agent.py
 - [ ] T028 [P] [US1] Write unit tests for indexing agent — given chunks with embeddings, upserts to search index with correct field mapping; test delete_by_document_id; verify user_id is set on all chunks in backend/tests/unit/test_indexing_agent.py
 - [ ] T029 [P] [US1] Write unit tests for document_service — test create_document (Cosmos write), test duplicate detection by content_hash + user_id, test status transitions (pending→processing→completed|failed), test get_document, test stale job recovery on startup in backend/tests/unit/test_document_service.py
+- [ ] T040 [P] [US1] Write frontend unit test for UploadPanel — test file selection, validation rejection for non-PDF, upload trigger, duplicate dialog display in frontend/tests/unit/UploadPanel.test.tsx
 
 ### Implementation for User Story 1
 
@@ -89,7 +91,6 @@
 - [ ] T037 [P] [US1] Create StatusBadge component — colored badge showing document processing status (pending=gray, processing=blue with spinner, completed=green, failed=red with error tooltip) in frontend/src/components/StatusBadge.tsx
 - [ ] T038 [P] [US1] Create EmptyState component — prompt message with upload CTA when no documents exist, reusable for both documents page and chat page in frontend/src/components/EmptyState.tsx
 - [ ] T039 [US1] Implement useDocuments hook — fetch document list, upload file with progress callback, poll status for processing documents (5s interval), handle duplicate 409 response, delete document in frontend/src/hooks/useDocuments.ts
-- [ ] T040 [US1] Write frontend unit test for UploadPanel — test file selection, validation rejection for non-PDF, upload trigger, duplicate dialog display in frontend/tests/unit/UploadPanel.test.tsx
 
 **Checkpoint**: User Story 1 complete — PDFs can be uploaded, processed through the 3-agent pipeline, and indexed in Azure AI Search. Status is visible. This is the independently testable MVP foundation.
 
@@ -108,6 +109,7 @@
 - [ ] T041 [P] [US2] Write contract tests for POST /api/v1/chat/conversations (201), GET /conversations (200 with pagination), GET /conversations/{id} (200 with messages), POST /conversations/{id}/messages (200 with user_message + assistant_message + citations), DELETE /conversations/{id} (204), 400 on empty message, 400 when no documents indexed in backend/tests/contract/test_chat_api.py
 - [ ] T042 [P] [US2] Write integration test for full RAG flow — seed search index with sample chunks, send question, verify response contains relevant content and valid citations referencing seeded documents in backend/tests/integration/test_chat_flow.py
 - [ ] T043 [P] [US2] Write unit tests for chat_service — test query embedding generation, test hybrid search call with user_id filter, test prompt construction with context + conversation history (last 10 messages), test citation extraction from model response, test "no relevant results" handling, test empty index guard in backend/tests/unit/test_chat_service.py
+- [ ] T051 [P] [US2] Write frontend unit test for ChatPanel — test message rendering, test send message trigger, test loading state display, test empty state, test citation link click behavior in frontend/tests/unit/ChatPanel.test.tsx
 
 ### Implementation for User Story 2
 
@@ -118,7 +120,6 @@
 - [ ] T048 [US2] Create ChatPanel component — scrollable message list (auto-scroll to bottom on new message), text input with send button and Enter-key submit, loading skeleton during AI response generation, empty state when no messages, citation cards section below messages in frontend/src/components/ChatPanel.tsx
 - [ ] T049 [US2] Implement useChat hook — manage conversation list, active conversation selection, message sending (optimistic user message display + API call + append assistant response), create new conversation, delete conversation, handle loading/error states in frontend/src/hooks/useChat.ts
 - [ ] T050 [US2] Create ChatPage — two-column layout with conversation list sidebar (left) and active chat panel (right), new conversation button, document count indicator, empty state when no conversations, responsive layout in frontend/src/pages/ChatPage.tsx
-- [ ] T051 [US2] Write frontend unit test for ChatPanel — test message rendering, test send message trigger, test loading state display, test empty state, test citation link click behavior in frontend/tests/unit/ChatPanel.test.tsx
 
 **Checkpoint**: User Stories 1 AND 2 complete — the full end-to-end RAG experience works (upload → process → chat with citations). This is the complete P1 MVP.
 
@@ -134,7 +135,8 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T052 [P] [US3] Write contract tests for GET /api/v1/documents (200 with pagination and status filter) and DELETE /api/v1/documents/{id} (202 with deletion confirmation, 404 for missing) in backend/tests/contract/test_documents_api.py
+- [ ] T052 [P] [US3] Write contract tests for GET /api/v1/documents (200 with pagination and status filter) and DELETE /api/v1/documents/{id} (202 with deletion confirmation, 404 for missing) in backend/tests/contract/test_documents_api.py (extends test file from T024)
+- [ ] T058 [P] [US3] Write frontend unit test for DocumentLibrary — test table rendering with sample data, test delete confirmation dialog, test status filter, test empty state in frontend/tests/unit/DocumentLibrary.test.tsx
 
 ### Implementation for User Story 3
 
@@ -143,7 +145,6 @@
 - [ ] T055 [US3] Implement cascading delete — DELETE /api/v1/documents/{id} triggers: delete chunks from AI Search by document_id → delete blob from storage → delete Cosmos DB record; return 202; handle partial failures gracefully with logging in backend/app/api/documents.py and backend/app/services/document_service.py
 - [ ] T056 [US3] Create DocumentLibrary component — sortable table with columns (filename, status via StatusBadge, page count, upload date, actions), delete button with confirmation dialog, status filter dropdown, pagination controls in frontend/src/components/DocumentLibrary.tsx
 - [ ] T057 [US3] Create DocumentsPage — full-width layout with DocumentLibrary, upload button linking to UploadPanel modal, document count header in frontend/src/pages/DocumentsPage.tsx
-- [ ] T058 [US3] Write frontend unit test for DocumentLibrary — test table rendering with sample data, test delete confirmation dialog, test status filter, test empty state in frontend/tests/unit/DocumentLibrary.test.tsx
 
 **Checkpoint**: User Stories 1, 2, AND 3 complete — full document lifecycle (upload, process, query, manage, delete) is working.
 
@@ -159,7 +160,7 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T059 [P] [US4] Write contract test for multi-file upload — POST /api/v1/documents/upload with multiple files returns list of document responses, each with independent status in backend/tests/contract/test_documents_api.py
+- [ ] T059 [P] [US4] Write contract test for multi-file upload — POST /api/v1/documents/upload with multiple files returns list of document responses, each with independent status in backend/tests/contract/test_documents_api.py (extends test file from T024)
 
 ### Implementation for User Story 4
 
@@ -177,10 +178,11 @@
 
 - [ ] T063 [P] Create backend Dockerfile — multi-stage build (builder + runtime), Python 3.12-slim base, install requirements, copy app, expose port 8000, CMD uvicorn in backend/Dockerfile
 - [ ] T064 [P] Create frontend Dockerfile — multi-stage build (builder with Node 20 + runtime with nginx), npm ci + npm run build, copy dist to nginx, configure SPA fallback in frontend/Dockerfile
-- [ ] T065 Cross-story UX consistency review — verify all pages have consistent loading indicators, error toasts, empty states, and accessible navigation; verify keyboard navigation works across ChatPage, DocumentsPage, and upload flows
+- [ ] T065 Cross-story UX consistency review — verify all pages have consistent loading indicators, error toasts, empty states, and accessible navigation; verify keyboard navigation works across ChatPage, DocumentsPage, and upload flows; execute manual first-attempt walkthrough per SC-004 (upload → index → chat → manage lifecycle) without consulting documentation
 - [ ] T066 Performance budget verification — measure and assert: query response <10s (integration test), PDF processing <3min for 50-page sample (integration test timing), delete propagation <30s (integration test), 10 concurrent jobs without >20% degradation
 - [ ] T067 [P] Add structured logging verification — confirm all pipeline stages emit expected log events (extraction_started, extraction_completed, embedding_started, etc.) with correlation IDs; verify logs are parseable JSON per FR-019
 - [ ] T068 Run quickstart.md validation — follow setup instructions in specs/001-pdf-multiagent-rag/quickstart.md against actual project, verify backend starts, frontend builds, and end-to-end flow works
+- [ ] T070 RAG quality evaluation — create curated test dataset with known-answer questions and unanswerable questions; verify citation accuracy ≥90% against ground truth (SC-003) and unanswerable question detection ≥95% (SC-005) using automated evaluation script in backend/tests/evaluation/test_rag_quality.py
 
 ---
 
@@ -215,8 +217,8 @@
 
 - All Setup tasks T002–T006 marked [P] can run simultaneously
 - Foundational tasks T009–T015 and T019–T023 marked [P] can run simultaneously
-- Within US1: Tests T024–T029 can run in parallel; agents T031–T033 can run in parallel; frontend components T036–T038 can run in parallel
-- Within US2: Tests T041–T043 can run in parallel; components T046–T047 can run in parallel
+- Within US1: Tests T024–T029, T040 can run in parallel; agents T031–T033 can run in parallel; frontend components T036–T038 can run in parallel
+- Within US2: Tests T041–T043, T051 can run in parallel; components T046–T047 can run in parallel
 - US1 and US2 can be worked on in parallel by different developers after Foundational phase
 - US3 can run in parallel with US1/US2
 
@@ -232,8 +234,9 @@ T026: Unit test for extraction agent
 T027: Unit test for embedding agent
 T028: Unit test for indexing agent
 T029: Unit test for document_service
+T040: Frontend unit test for UploadPanel
 
-# Implement all three agents in parallel (different files):
+# Implement all three agents in parallel(different files):
 T031: Extraction agent in agents/extraction.py
 T032: Embedding agent in agents/embedding.py
 T033: Indexing agent in agents/indexing.py

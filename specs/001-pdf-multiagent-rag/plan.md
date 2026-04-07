@@ -133,6 +133,8 @@ frontend/
 
 **Structure Decision**: Web application with separate frontend and backend projects. The backend hosts the API and agent pipeline in a single Python process (FastAPI with background tasks). The frontend is a React SPA served independently. This separation enables independent deployment, testing, and scaling while keeping the agent orchestration co-located with the API for simplicity (no distributed message bus needed for an internal tool).
 
+**Service Wrapper Pattern**: Azure Blob Storage and Azure AI Search have dedicated service wrappers (`storage_service.py`, `search_service.py`) because they expose generic operations (upload/delete blob, upsert/search/delete index docs) reused across multiple features. Cosmos DB operations are embedded directly in domain services (`document_service.py`, chat API) because each domain has distinct query patterns, partition key logic, and data shaping — a generic Cosmos wrapper would add indirection without reducing complexity.
+
 ## Complexity Tracking
 
 No constitution violations. All four gates pass without exceptions.

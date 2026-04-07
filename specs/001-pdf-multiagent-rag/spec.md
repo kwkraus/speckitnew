@@ -88,7 +88,7 @@ A user can upload multiple PDF files in a single operation rather than one at a 
 
 - What happens when a PDF contains only scanned images with no selectable text? The system should attempt OCR-based extraction and notify the user if content quality may be reduced.
 - What happens when the same PDF is uploaded twice? The system detects duplicates by content hash, notifies the user that a duplicate was found, and asks whether to skip re-indexing or replace the existing indexed version. The user must explicitly choose before any action is taken.
-- How does the system handle very large PDFs (hundreds of pages)? Processing should be chunked and the user should receive progress feedback.
+- How does the system handle very large PDFs (hundreds of pages)? Processing is chunked internally and the user receives per-agent-stage status updates (extraction → embedding → indexing) via the status endpoint rather than per-page progress.
 - What happens when the vector index is temporarily unavailable? The system should queue ingestion tasks and retry, notifying the user of delays.
 - What happens when a user asks a question while no documents are indexed? The system should inform the user that no documents are available and prompt them to upload one.
 - What happens if a document is deleted while a query is being processed that references it? The system should complete the in-progress query using cached context and acknowledge deletion applies to future queries.
@@ -115,14 +115,14 @@ A user can upload multiple PDF files in a single operation rather than one at a 
 - **FR-016**: System MUST propagate the authenticated user's identity through all operations to enforce per-user data isolation (documents, conversation history, and index entries are scoped to the authenticated user).
 - **FR-017**: All authenticated users MUST have identical capabilities; no administrative or elevated roles exist within the application — access control differentiation is handled exclusively at the identity provider level.
 - **FR-018**: When a duplicate PDF is detected (matched by content hash), the system MUST notify the user and present a choice to either skip re-indexing or replace the existing indexed version; no action is taken without explicit user confirmation.
-- **FR-019**: The system MUST emit structured log entries for errors, warnings, and key pipeline events (e.g., extraction started, embedding complete, indexing failed) to a central log store accessible to developers for debugging.
+- **FR-019**: The system MUST emit structured log entries for errors, warnings, and key pipeline events (e.g., extraction started, embedding complete, indexing failed) to a central log store accessible to developers for debugging. No metrics dashboard or distributed tracing is required for v1.
 
 ### Quality & Experience Requirements
 
 - **QR-001**: Each agent stage (extraction, embedding, indexing) MUST be independently testable with defined inputs and outputs to enable automated correctness validation.
 - **QR-002**: The chat interface MUST provide a clear, familiar conversational UX with visible message history, loading indicators during answer generation, and legible citation formatting.
 - **QR-003**: The system MUST deliver query responses within 10 seconds under normal operating conditions; document processing time for a typical 50-page PDF MUST complete within 3 minutes.
-- **QR-004**: The system MUST emit structured logs for errors, warnings, and key pipeline stage transitions to a central log store; no metrics dashboard or distributed tracing is required.
+- **QR-004**: *(Merged into FR-019)* — Structured logging requirements and v1 scope limits are consolidated under FR-019.
 
 ### Key Entities
 
@@ -156,4 +156,4 @@ A user can upload multiple PDF files in a single operation rather than one at a 
 - File size limits will follow platform defaults (assumed up to 50 MB per file); very large files may require extended processing time.
 - The multi-agent workflow orchestration runs as a background pipeline; users do not need to remain on the page while processing occurs.
 - The system has no formal availability or uptime requirement; it is an internal tool where occasional downtime is acceptable. No SLA, recovery time objective (RTO), or recovery point objective (RPO) targets apply. Resilience design (retries, queuing) is for user experience quality, not SLA compliance.
-- Conversation history is maintained for the duration of a browser session; persistent cross-session history is out of scope for v1.
+- Conversation history is persisted in Cosmos DB and available across browser sessions; users can view, continue, and delete past conversations. Shared conversations across users are out of scope for v1.
